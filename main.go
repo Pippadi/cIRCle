@@ -1,52 +1,39 @@
 package main
 
 import (
-	"net"
-	"strings"
-
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"github.com/Pippadi/cIRCle/src/buffer"
-	"github.com/Pippadi/cIRCle/src/message"
+	"fyne.io/fyne/v2/widget"
+	"github.com/Pippadi/cIRCle/src/connection"
 	"gopkg.in/irc.v3"
 )
 
 func main() {
 	a := app.New()
 	w := a.NewWindow("cIRCle")
-	incoming, outgoing := make(chan message.Message), make(chan message.Message)
-	buffer := buffer.New(incoming, outgoing)
 
-	msgHandler := irc.HandlerFunc(func(c *irc.Client, m *irc.Message) {
-		switch strings.ToLower(m.Command) {
-		case "001":
-			c.Write("JOIN #op")
-
-		case "privmsg":
-			buffer.Incoming <- message.Message{m.Prefix.Name, m.Trailing()}
-		}
-	})
-
-	conn, _ := net.Dial("tcp", "localhost:6667")
 	ircConf := irc.ClientConfig{
-		Nick:    "cIRCle",
-		Name:    "cIRCle",
-		User:    "cIRCle",
-		Pass:    "password",
-		Handler: msgHandler,
+		Nick: "cIRCle",
+		Name: "cIRCle",
+		User: "cIRCle",
+		Pass: "password",
 	}
+	conn := connection.New("localhost:6667", ircConf)
 
-	client := irc.NewClient(conn, ircConf)
-	go client.Run()
+	tabs := container.NewAppTabs()
 
-	go func() {
-		for {
-			client.Write("PRIVMSG #op :" + (<-buffer.Outgoing).Content)
-		}
-	}()
+	joinEntry := widget.NewEntry()
+	joinEntry.SetPlaceHolder("Channel")
+	joinBtn := widget.NewButton("Join", func() {
+		buf := conn.Join(joinEntry.Text)
+		bufTab := container.NewTabItem(buf.Channel, buf.UI.CanvasObject())
+		tabs.Append(bufTab)
+		joinEntry.Text = ""
+		joinEntry.Refresh()
+	})
+	joinVBox := container.NewVBox(joinEntry, joinBtn)
+	tabs.Append(container.NewTabItem("Join", joinVBox))
 
-	bufTab := container.NewTabItem("Buffer", buffer.UI.CanvasObject())
-
-	w.SetContent(container.NewAppTabs(bufTab))
+	w.SetContent(tabs)
 	w.ShowAndRun()
 }
