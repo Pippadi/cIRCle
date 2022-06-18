@@ -6,19 +6,16 @@ import (
 
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
+	"github.com/Pippadi/cIRCle/src/buffer"
+	"github.com/Pippadi/cIRCle/src/message"
 	"gopkg.in/irc.v3"
 )
 
 func main() {
 	a := app.New()
 	w := a.NewWindow("cIRCle")
-
-	msgEntry := widget.NewEntry()
-	msgEntry.SetPlaceHolder("Message")
-	sendBtn := widget.NewButton("Send", func() {})
-	chatBox := widget.NewRichText()
-	vBox := container.NewVBox(chatBox, msgEntry, sendBtn)
+	incoming, outgoing := make(chan message.Message), make(chan message.Message)
+	buffer := buffer.New(incoming, outgoing)
 
 	msgHandler := irc.HandlerFunc(func(c *irc.Client, m *irc.Message) {
 		switch strings.ToLower(m.Command) {
@@ -26,8 +23,7 @@ func main() {
 			c.Write("JOIN #op")
 
 		case "privmsg":
-			chatBox.Segments = append(chatBox.Segments, &widget.TextSegment{Text: m.Trailing()})
-			chatBox.Refresh()
+			buffer.Incoming <- message.Message{m.Prefix.Name, m.Trailing()}
 		}
 	})
 
@@ -43,8 +39,14 @@ func main() {
 	client := irc.NewClient(conn, ircConf)
 	go client.Run()
 
-	sendBtn.OnTapped = func() { client.Write("PRIVMSG #op :" + msgEntry.Text) }
+	go func() {
+		for {
+			client.Write("PRIVMSG #op :" + (<-buffer.Outgoing).Content)
+		}
+	}()
 
-	w.SetContent(vBox)
+	bufTab := container.NewTabItem("Buffer", buffer.UI.CanvasObject())
+
+	w.SetContent(container.NewAppTabs(bufTab))
 	w.ShowAndRun()
 }
