@@ -11,23 +11,40 @@ import (
 )
 
 type Connection struct {
+	UI             *UI
 	IrcClient      *irc.Client
 	ChannelBuffers map[string](*buffer.Buffer)
 }
 
-func New(addr string, clientConfig irc.ClientConfig) *Connection {
-	sock, err := net.Dial("tcp", addr)
-	log.Println(err)
+func New() *Connection {
 
 	c := Connection{}
+	c.UI = newUI()
+	c.UI.ConnectBtn.OnTapped = c.connect
 	c.ChannelBuffers = make(map[string](*buffer.Buffer))
-	clientConfig.Handler = irc.HandlerFunc(c.handler)
-	c.IrcClient = irc.NewClient(sock, clientConfig)
-	go func() {
-		e := c.IrcClient.Run()
-		log.Println(e)
-	}()
 	return &c
+}
+
+func (conn *Connection) connect() {
+	addr := conn.UI.AddrEntry.Text + ":" + conn.UI.PortEntry.Text
+	sock, err := net.Dial("tcp", addr)
+	if err != nil {
+		log.Println(err)
+	}
+	clientConfig := irc.ClientConfig{
+		Nick:    conn.UI.NickEntry.Text,
+		Name:    conn.UI.NickEntry.Text,
+		User:    conn.UI.NickEntry.Text,
+		Pass:    conn.UI.PassEntry.Text,
+		Handler: irc.HandlerFunc(conn.handler),
+	}
+	conn.IrcClient = irc.NewClient(sock, clientConfig)
+	go func() {
+		err = conn.IrcClient.Run()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 }
 
 func (conn *Connection) handler(client *irc.Client, m *irc.Message) {

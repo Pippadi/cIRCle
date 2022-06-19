@@ -15,11 +15,12 @@ func New(channel string) *Buffer {
 	b.Channel = channel
 	b.Incoming, b.Outgoing = make(chan message.Message), make(chan message.Message)
 	b.UI.SendBtn.OnTapped = func() {
-		msg := message.Message{"cIRCle", b.UI.MsgEntry.Text}
-		b.Outgoing <- msg
-		b.UI.AddMessageToChat(msg)
-		b.UI.MsgEntry.Text = ""
-		b.UI.MsgEntry.Refresh()
+		if b.UI.MsgEntry.Text != "" {
+			msg := message.Message{"cIRCle", b.UI.MsgEntry.Text}
+			b.Outgoing <- msg
+			b.UI.AddMessageToChat(msg)
+			b.UI.MsgEntry.SetText("")
+		}
 	}
 	go func() {
 		for {
