@@ -9,14 +9,14 @@ type Buffer struct {
 	Outgoing chan message.Message
 }
 
-func New(channel string) *Buffer {
+func New(channel, nick string) *Buffer {
 	b := Buffer{}
 	b.UI = newUI()
 	b.Channel = channel
 	b.Incoming, b.Outgoing = make(chan message.Message), make(chan message.Message)
 	b.UI.SendBtn.OnTapped = func() {
 		if b.UI.MsgEntry.Text != "" {
-			msg := message.Message{"cIRCle", b.UI.MsgEntry.Text}
+			msg := message.Message{nick, b.UI.MsgEntry.Text}
 			b.Outgoing <- msg
 			b.UI.AddMessageToChat(msg)
 			b.UI.MsgEntry.SetText("")

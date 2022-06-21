@@ -17,10 +17,11 @@ type UI struct {
 func newUI() *UI {
 	b := UI{}
 	b.ChatArea = widget.NewRichText()
+	scrollBox := container.NewVScroll(container.NewVBox(b.ChatArea))
 	b.MsgEntry = widget.NewEntry()
 	b.MsgEntry.SetPlaceHolder("Message")
 	b.SendBtn = widget.NewButton("Send", func() {})
-	b.box = container.NewVBox(b.ChatArea, b.MsgEntry, b.SendBtn)
+	b.box = container.NewVBox(scrollBox, b.MsgEntry, b.SendBtn)
 	return &b
 }
 
