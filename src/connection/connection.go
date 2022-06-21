@@ -18,7 +18,6 @@ type Connection struct {
 }
 
 func New() *Connection {
-
 	c := Connection{}
 	c.UI = newUI()
 	c.UI.ConnectBtn.OnTapped = c.connect
@@ -42,10 +41,12 @@ func (conn *Connection) connect() {
 	conn.Nick = conn.UI.NickEntry.Text
 	conn.IrcClient = irc.NewClient(sock, clientConfig)
 	conn.UI.SetConnParamsActive(false)
+
 	conn.UI.JoinBtn.OnTapped = func() {
 		conn.Join(conn.UI.JoinEntry.Text)
 		conn.UI.JoinEntry.SetText("")
 	}
+
 	go func() {
 		err = conn.IrcClient.Run()
 		if err != nil {
@@ -56,20 +57,35 @@ func (conn *Connection) connect() {
 }
 
 func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
-	channel := m.Params[0]
 	switch strings.ToLower(m.Command) {
 	case "privmsg":
-		buf, exists := conn.ChannelBuffers[channel] // m.Params[0] is the channel
-		if !exists {
-			conn.AddBuffer(channel)
+		var buf *buffer.Buffer
+		if conn.IrcClient.FromChannel(m) {
+			buf = conn.ChannelBuffers[m.Params[0]] // m.Params[0] is the channel name. Messages can only come from joined channels.
+		} else {
+			var exists bool
+			buf, exists = conn.ChannelBuffers[m.Prefix.Name] // m.Prefix.Name is the sender's name for PMs
+			if !exists {
+				conn.OpenPM(m.Prefix.Name)
+				buf = conn.ChannelBuffers[m.Prefix.Name]
+			}
 		}
-		buf.Incoming <- message.Message{m.Prefix.Name, m.Trailing()}
+		buf.Incoming <- message.Message{m.Prefix.Name, m.Trailing()} // m.Prefix.Name is the sender's name
 	}
 }
 
 func (conn *Connection) Join(channel string) {
 	conn.IrcClient.Write("JOIN " + channel)
 	conn.AddBuffer(channel)
+	conn.ListenAndWriteMessages(channel)
+}
+
+func (conn *Connection) OpenPM(who string) {
+	conn.AddBuffer(who)
+	conn.ListenAndWriteMessages(who)
+}
+
+func (conn *Connection) ListenAndWriteMessages(channel string) {
 	go func() {
 		for {
 			conn.IrcClient.Write("PRIVMSG " + channel + " :" + (<-conn.ChannelBuffers[channel].Outgoing).Content)
