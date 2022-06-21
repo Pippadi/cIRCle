@@ -12,6 +12,7 @@ import (
 
 type Connection struct {
 	UI             *UI
+	Nick           string
 	IrcClient      *irc.Client
 	ChannelBuffers map[string](*buffer.Buffer)
 }
@@ -38,30 +39,46 @@ func (conn *Connection) connect() {
 		Pass:    conn.UI.PassEntry.Text,
 		Handler: irc.HandlerFunc(conn.handler),
 	}
+	conn.Nick = conn.UI.NickEntry.Text
 	conn.IrcClient = irc.NewClient(sock, clientConfig)
+	conn.UI.SetConnParamsActive(false)
+	conn.UI.JoinBtn.OnTapped = func() {
+		conn.Join(conn.UI.JoinEntry.Text)
+		conn.UI.JoinEntry.SetText("")
+	}
 	go func() {
 		err = conn.IrcClient.Run()
 		if err != nil {
 			log.Println(err)
 		}
+		conn.UI.SetConnParamsActive(true)
 	}()
 }
 
 func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
+	channel := m.Params[0]
 	switch strings.ToLower(m.Command) {
 	case "privmsg":
-		conn.ChannelBuffers[m.Params[0]].Incoming <- message.Message{m.Prefix.Name, m.Trailing()}
+		buf, exists := conn.ChannelBuffers[channel] // m.Params[0] is the channel
+		if !exists {
+			conn.AddBuffer(channel)
+		}
+		buf.Incoming <- message.Message{m.Prefix.Name, m.Trailing()}
 	}
 }
 
-func (conn *Connection) Join(channel string) *buffer.Buffer {
+func (conn *Connection) Join(channel string) {
 	conn.IrcClient.Write("JOIN " + channel)
-	buf := buffer.New(channel)
-	conn.ChannelBuffers[channel] = buf
+	conn.AddBuffer(channel)
 	go func() {
 		for {
 			conn.IrcClient.Write("PRIVMSG " + channel + " :" + (<-conn.ChannelBuffers[channel].Outgoing).Content)
 		}
 	}()
-	return buf
+}
+
+func (conn *Connection) AddBuffer(channel string) {
+	buf := buffer.New(channel, conn.Nick)
+	conn.ChannelBuffers[channel] = buf
+	conn.UI.AddBuffer(buf)
 }

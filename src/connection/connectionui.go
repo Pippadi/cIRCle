@@ -3,16 +3,21 @@ package connection
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/Pippadi/cIRCle/src/buffer"
 )
 
 type UI struct {
-	box        *fyne.Container
-	AddrEntry  *widget.Entry
-	PortEntry  *widget.Entry
-	NickEntry  *widget.Entry
-	PassEntry  *widget.Entry
-	ConnectBtn *widget.Button
+	inputFields *fyne.Container
+	tabStack    *container.AppTabs
+	AddrEntry   *widget.Entry
+	PortEntry   *widget.Entry
+	NickEntry   *widget.Entry
+	PassEntry   *widget.Entry
+	ConnectBtn  *widget.Button
+	JoinEntry   *widget.Entry
+	JoinBtn     *widget.Button
 }
 
 func newUI() *UI {
@@ -27,11 +32,35 @@ func newUI() *UI {
 	ui.PassEntry = widget.NewEntry()
 	ui.PassEntry.SetPlaceHolder("Password")
 	ui.ConnectBtn = widget.NewButton("Connect", func() {})
-	inputs := container.NewVBox(ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry)
-	ui.box = container.NewVBox(inputs, ui.ConnectBtn)
+	ui.inputFields = container.NewVBox(ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry)
+
+	ui.JoinEntry = widget.NewEntry()
+	ui.JoinEntry.SetPlaceHolder("Channel")
+	ui.JoinBtn = widget.NewButton("Join", func() {})
+
+	connectPane := container.NewVBox(ui.inputFields, ui.ConnectBtn, layout.NewSpacer(), ui.JoinEntry, ui.JoinBtn)
+
+	ui.tabStack = container.NewAppTabs(container.NewTabItem("Connect", connectPane))
+
 	return &ui
 }
 
 func (ui *UI) CanvasObject() fyne.CanvasObject {
-	return ui.box
+	return ui.tabStack
+}
+
+func (ui *UI) SetConnParamsActive(active bool) {
+	var widgets = []fyne.Disableable{ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry}
+	for _, w := range widgets {
+		if active {
+			w.Enable()
+		} else {
+			w.Disable()
+		}
+
+	}
+}
+
+func (ui *UI) AddBuffer(buf *buffer.Buffer) {
+	ui.tabStack.Append(container.NewTabItem(buf.Channel, buf.UI.CanvasObject()))
 }
