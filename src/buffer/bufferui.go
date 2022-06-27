@@ -3,6 +3,7 @@ package buffer
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/Pippadi/cIRCle/src/message"
 )
@@ -17,11 +18,13 @@ type UI struct {
 func newUI() *UI {
 	b := UI{}
 	b.ChatArea = widget.NewRichText()
+	b.ChatArea.Wrapping = fyne.TextWrapBreak
 	scrollBox := container.NewVScroll(container.NewVBox(b.ChatArea))
 	b.MsgEntry = widget.NewEntry()
 	b.MsgEntry.SetPlaceHolder("Message")
 	b.SendBtn = widget.NewButton("Send", func() {})
-	b.box = container.NewVBox(scrollBox, b.MsgEntry, b.SendBtn)
+	controls := container.NewVBox(b.MsgEntry, b.SendBtn)
+	b.box = container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, scrollBox)
 	return &b
 }
 
