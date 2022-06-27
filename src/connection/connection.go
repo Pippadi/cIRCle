@@ -22,6 +22,7 @@ func New() *Connection {
 	c.UI = newUI()
 	c.UI.ConnectBtn.OnTapped = c.connect
 	c.ChannelBuffers = make(map[string](*buffer.Buffer))
+	c.UI.SetConnectionState(false)
 	return &c
 }
 
@@ -40,7 +41,6 @@ func (conn *Connection) connect() {
 	}
 	conn.Nick = conn.UI.NickEntry.Text
 	conn.IrcClient = irc.NewClient(sock, clientConfig)
-	conn.UI.SetConnParamsActive(false)
 
 	conn.UI.JoinBtn.OnTapped = func() {
 		conn.Join(conn.UI.JoinEntry.Text)
@@ -48,11 +48,12 @@ func (conn *Connection) connect() {
 	}
 
 	go func() {
+		conn.UI.SetConnectionState(true)
 		err = conn.IrcClient.Run()
 		if err != nil {
 			log.Println(err)
 		}
-		conn.UI.SetConnParamsActive(true)
+		conn.UI.SetConnectionState(false)
 	}()
 }
 
