@@ -46,6 +46,7 @@ func (conn *Connection) connect() {
 		conn.Join(conn.UI.JoinEntry.Text)
 		conn.UI.JoinEntry.SetText("")
 	}
+	conn.UI.ConnectBtn.OnTapped = conn.disconnect
 
 	go func() {
 		conn.UI.SetConnectionState(true)
@@ -54,7 +55,12 @@ func (conn *Connection) connect() {
 			log.Println(err)
 		}
 		conn.UI.SetConnectionState(false)
+		conn.UI.ConnectBtn.OnTapped = conn.connect
 	}()
+}
+
+func (conn *Connection) disconnect() {
+	conn.IrcClient.Write("QUIT " + conn.Nick)
 }
 
 func (conn *Connection) handler(client *irc.Client, m *irc.Message) {

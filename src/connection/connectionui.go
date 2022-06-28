@@ -54,6 +54,11 @@ func (ui *UI) SetConnectionState(connected bool) {
 	var disableWhenConnected = []fyne.Disableable{ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry}
 	setWidgetsActive(connected, enableWhenConnected)
 	setWidgetsActive(!connected, disableWhenConnected)
+	if connected {
+		ui.ConnectBtn.SetText("Disconnect")
+	} else {
+		ui.ConnectBtn.SetText("Connect")
+	}
 }
 
 func (ui *UI) AddBuffer(buf *buffer.Buffer) {
