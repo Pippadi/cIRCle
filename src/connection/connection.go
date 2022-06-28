@@ -11,17 +11,17 @@ import (
 )
 
 type Connection struct {
-	UI             *UI
-	Nick           string
-	IrcClient      *irc.Client
-	ChannelBuffers map[string](*buffer.Buffer)
+	UI        *UI
+	Nick      string
+	IrcClient *irc.Client
+	Buffers   map[string](*buffer.Buffer)
 }
 
 func New() *Connection {
 	c := Connection{}
 	c.UI = newUI()
 	c.UI.ConnectBtn.OnTapped = c.connect
-	c.ChannelBuffers = make(map[string](*buffer.Buffer))
+	c.Buffers = make(map[string](*buffer.Buffer))
 	c.UI.SetConnectionState(false)
 	return &c
 }
@@ -56,6 +56,9 @@ func (conn *Connection) connect() {
 		}
 		conn.UI.SetConnectionState(false)
 		conn.UI.ConnectBtn.OnTapped = conn.connect
+		for _, buf := range conn.Buffers {
+			buf.UI.SetActive(false)
+		}
 	}()
 }
 
@@ -68,13 +71,13 @@ func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 	case "privmsg":
 		var buf *buffer.Buffer
 		if conn.IrcClient.FromChannel(m) {
-			buf = conn.ChannelBuffers[m.Params[0]] // m.Params[0] is the channel name. Messages can only come from joined channels.
+			buf = conn.Buffers[m.Params[0]] // m.Params[0] is the channel name. Messages can only come from joined channels.
 		} else {
 			var exists bool
-			buf, exists = conn.ChannelBuffers[m.Prefix.Name] // m.Prefix.Name is the sender's name for PMs
+			buf, exists = conn.Buffers[m.Prefix.Name] // m.Prefix.Name is the sender's name for PMs
 			if !exists {
 				conn.OpenPM(m.Prefix.Name)
-				buf = conn.ChannelBuffers[m.Prefix.Name]
+				buf = conn.Buffers[m.Prefix.Name]
 			}
 		}
 		buf.Incoming <- message.Message{m.Prefix.Name, m.Trailing()} // m.Prefix.Name is the sender's name
@@ -95,13 +98,13 @@ func (conn *Connection) OpenPM(who string) {
 func (conn *Connection) ListenAndWriteMessages(channel string) {
 	go func() {
 		for {
-			conn.IrcClient.Write("PRIVMSG " + channel + " :" + (<-conn.ChannelBuffers[channel].Outgoing).Content)
+			conn.IrcClient.Write("PRIVMSG " + channel + " :" + (<-conn.Buffers[channel].Outgoing).Content)
 		}
 	}()
 }
 
 func (conn *Connection) AddBuffer(channel string) {
 	buf := buffer.New(channel, conn.Nick)
-	conn.ChannelBuffers[channel] = buf
+	conn.Buffers[channel] = buf
 	conn.UI.AddBuffer(buf)
 }

@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/Pippadi/cIRCle/src/buffer"
+	"github.com/Pippadi/cIRCle/src/utils"
 )
 
 type UI struct {
@@ -52,8 +53,8 @@ func (ui *UI) CanvasObject() fyne.CanvasObject {
 func (ui *UI) SetConnectionState(connected bool) {
 	var enableWhenConnected = []fyne.Disableable{ui.JoinEntry, ui.JoinBtn}
 	var disableWhenConnected = []fyne.Disableable{ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry}
-	setWidgetsActive(connected, enableWhenConnected)
-	setWidgetsActive(!connected, disableWhenConnected)
+	utils.SetWidgetsActive(connected, enableWhenConnected)
+	utils.SetWidgetsActive(!connected, disableWhenConnected)
 	if connected {
 		ui.ConnectBtn.SetText("Disconnect")
 	} else {
@@ -63,15 +64,4 @@ func (ui *UI) SetConnectionState(connected bool) {
 
 func (ui *UI) AddBuffer(buf *buffer.Buffer) {
 	ui.tabStack.Append(container.NewTabItem(buf.Channel, buf.UI.CanvasObject()))
-}
-
-func setWidgetsActive(active bool, widgets []fyne.Disableable) {
-	for _, w := range widgets {
-		if active {
-			w.Enable()
-		} else {
-			w.Disable()
-		}
-
-	}
 }

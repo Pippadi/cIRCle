@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/Pippadi/cIRCle/src/message"
+	"github.com/Pippadi/cIRCle/src/utils"
 )
 
 type UI struct {
@@ -35,4 +36,9 @@ func (b *UI) AddMessageToChat(msg message.Message) {
 
 func (b *UI) CanvasObject() fyne.CanvasObject {
 	return b.box
+}
+
+func (b *UI) SetActive(active bool) {
+	var toset = []fyne.Disableable{b.MsgEntry, b.SendBtn}
+	utils.SetWidgetsActive(active, toset)
 }
