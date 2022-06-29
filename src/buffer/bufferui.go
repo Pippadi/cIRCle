@@ -13,10 +13,10 @@ type UI struct {
 	MsgEntry *widget.Entry
 	ChatArea *widget.RichText
 	SendBtn  *widget.Button
-	box      *fyne.Container
+	tabItem  *container.TabItem
 }
 
-func newUI() *UI {
+func newUI(channel string) *UI {
 	b := UI{}
 	b.ChatArea = widget.NewRichText()
 	b.ChatArea.Wrapping = fyne.TextWrapBreak
@@ -25,7 +25,7 @@ func newUI() *UI {
 	b.MsgEntry.SetPlaceHolder("Message")
 	b.SendBtn = widget.NewButton("Send", func() {})
 	controls := container.NewVBox(b.MsgEntry, b.SendBtn)
-	b.box = container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, scrollBox)
+	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, scrollBox))
 	return &b
 }
 
@@ -34,8 +34,8 @@ func (b *UI) AddMessageToChat(msg message.Message) {
 	b.ChatArea.Refresh()
 }
 
-func (b *UI) CanvasObject() fyne.CanvasObject {
-	return b.box
+func (b *UI) TabItem() *container.TabItem {
+	return b.tabItem
 }
 
 func (b *UI) SetActive(active bool) {

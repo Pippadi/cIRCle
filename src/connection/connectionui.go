@@ -3,6 +3,7 @@ package connection
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/Pippadi/cIRCle/src/buffer"
@@ -19,9 +20,10 @@ type UI struct {
 	ConnectBtn  *widget.Button
 	JoinEntry   *widget.Entry
 	JoinBtn     *widget.Button
+	window      fyne.Window
 }
 
-func newUI() *UI {
+func newUI(w fyne.Window) *UI {
 	ui := UI{}
 	ui.AddrEntry = widget.NewEntry()
 	ui.AddrEntry.SetPlaceHolder("Address")
@@ -43,6 +45,8 @@ func newUI() *UI {
 
 	ui.tabStack = container.NewAppTabs(container.NewTabItem("Connect", connectPane))
 
+	ui.window = w
+
 	return &ui
 }
 
@@ -63,5 +67,17 @@ func (ui *UI) SetConnectionState(connected bool) {
 }
 
 func (ui *UI) AddBuffer(buf *buffer.Buffer) {
-	ui.tabStack.Append(container.NewTabItem(buf.Channel, buf.UI.CanvasObject()))
+	ui.tabStack.Append(buf.UI.TabItem())
+}
+
+func (ui *UI) RemoveBuffer(buf *buffer.Buffer) {
+	ui.tabStack.Remove(buf.UI.TabItem())
+}
+
+func (ui *UI) ShowError(err error) {
+	dialog.ShowError(err, ui.window)
+}
+
+func (ui *UI) ConnParamsValid() bool {
+	return ui.AddrEntry.Text != "" && ui.NickEntry.Text != "" && ui.PortEntry.Text != ""
 }

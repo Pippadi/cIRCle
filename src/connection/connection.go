@@ -1,10 +1,11 @@
 package connection
 
 import (
-	"log"
+	"errors"
 	"net"
 	"strings"
 
+	"fyne.io/fyne/v2"
 	"github.com/Pippadi/cIRCle/src/buffer"
 	"github.com/Pippadi/cIRCle/src/message"
 	"gopkg.in/irc.v3"
@@ -17,9 +18,9 @@ type Connection struct {
 	Buffers   map[string](*buffer.Buffer)
 }
 
-func New() *Connection {
+func New(w fyne.Window) *Connection {
 	c := Connection{}
-	c.UI = newUI()
+	c.UI = newUI(w)
 	c.UI.ConnectBtn.OnTapped = c.connect
 	c.Buffers = make(map[string](*buffer.Buffer))
 	c.UI.SetConnectionState(false)
@@ -27,19 +28,26 @@ func New() *Connection {
 }
 
 func (conn *Connection) connect() {
+	if !conn.UI.ConnParamsValid() {
+		conn.UI.ShowError(errors.New("Invalid connection parameters"))
+		return
+	}
+
 	addr := conn.UI.AddrEntry.Text + ":" + conn.UI.PortEntry.Text
 	sock, err := net.Dial("tcp", addr)
 	if err != nil {
-		log.Println(err)
+		conn.UI.ShowError(err)
+		return
 	}
+
+	conn.Nick = conn.UI.NickEntry.Text
 	clientConfig := irc.ClientConfig{
-		Nick:    conn.UI.NickEntry.Text,
-		Name:    conn.UI.NickEntry.Text,
-		User:    conn.UI.NickEntry.Text,
+		Nick:    conn.Nick,
+		Name:    conn.Nick,
+		User:    conn.Nick,
 		Pass:    conn.UI.PassEntry.Text,
 		Handler: irc.HandlerFunc(conn.handler),
 	}
-	conn.Nick = conn.UI.NickEntry.Text
 	conn.IrcClient = irc.NewClient(sock, clientConfig)
 
 	conn.UI.JoinBtn.OnTapped = func() {
@@ -51,13 +59,10 @@ func (conn *Connection) connect() {
 	go func() {
 		conn.UI.SetConnectionState(true)
 		err = conn.IrcClient.Run()
-		if err != nil {
-			log.Println(err)
-		}
 		conn.UI.SetConnectionState(false)
 		conn.UI.ConnectBtn.OnTapped = conn.connect
-		for _, buf := range conn.Buffers {
-			buf.UI.SetActive(false)
+		for c, _ := range conn.Buffers {
+			conn.RemoveBuffer(c)
 		}
 	}()
 }
@@ -107,4 +112,9 @@ func (conn *Connection) AddBuffer(channel string) {
 	buf := buffer.New(channel, conn.Nick)
 	conn.Buffers[channel] = buf
 	conn.UI.AddBuffer(buf)
+}
+
+func (conn *Connection) RemoveBuffer(channel string) {
+	conn.UI.RemoveBuffer(conn.Buffers[channel])
+	delete(conn.Buffers, channel)
 }

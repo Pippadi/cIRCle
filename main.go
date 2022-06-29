@@ -9,7 +9,7 @@ import (
 func main() {
 	a := app.New()
 	w := a.NewWindow("cIRCle")
-	conn := connection.New()
+	conn := connection.New(w)
 
 	w.SetContent(conn.UI.CanvasObject())
 	w.Resize(fyne.NewSize(400, 450))

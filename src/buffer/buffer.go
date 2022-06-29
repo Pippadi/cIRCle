@@ -11,7 +11,7 @@ type Buffer struct {
 
 func New(channel, nick string) *Buffer {
 	b := Buffer{}
-	b.UI = newUI()
+	b.UI = newUI(channel)
 	b.Channel = channel
 	b.Incoming, b.Outgoing = make(chan message.Message), make(chan message.Message)
 	b.UI.SendBtn.OnTapped = func() {
