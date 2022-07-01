@@ -55,15 +55,21 @@ func (ui *UI) CanvasObject() fyne.CanvasObject {
 }
 
 func (ui *UI) SetConnectionState(connected bool) {
-	var enableWhenConnected = []fyne.Disableable{ui.JoinEntry, ui.JoinBtn}
+	//var enableWhenConnected = []fyne.Disableable{}
 	var disableWhenConnected = []fyne.Disableable{ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry}
-	utils.SetWidgetsActive(connected, enableWhenConnected)
+	//utils.SetWidgetsActive(connected, enableWhenConnected)
 	utils.SetWidgetsActive(!connected, disableWhenConnected)
 	if connected {
 		ui.ConnectBtn.SetText("Disconnect")
 	} else {
 		ui.ConnectBtn.SetText("Connect")
+		ui.SetJoinable(false)
 	}
+}
+
+func (ui *UI) SetJoinable(joinable bool) {
+	var enableWhenJoinable = []fyne.Disableable{ui.JoinEntry, ui.JoinBtn}
+	utils.SetWidgetsActive(joinable, enableWhenJoinable)
 }
 
 func (ui *UI) AddBuffer(buf *buffer.Buffer) {

@@ -73,6 +73,8 @@ func (conn *Connection) disconnect() {
 
 func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 	switch strings.ToLower(m.Command) {
+	case "001":
+		conn.UI.SetJoinable(true)
 	case "privmsg":
 		var buf *buffer.Buffer
 		if conn.IrcClient.FromChannel(m) {
