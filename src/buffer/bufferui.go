@@ -49,6 +49,8 @@ func (b *UI) HandleCommand(cmd message.Command) {
 		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has quit"})
 	case "join":
 		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has joined"})
+	case "part":
+		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has left"})
 	}
 	b.ChatArea.Refresh()
 }

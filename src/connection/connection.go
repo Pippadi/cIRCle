@@ -91,6 +91,9 @@ func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 	case "join":
 		buf := conn.Buffers[m.Params[0]]
 		buf.CommandIn <- message.Command{m.Prefix.Name, "join"}
+	case "part":
+		buf := conn.Buffers[m.Params[0]]
+		buf.CommandIn <- message.Command{m.Prefix.Name, "part"}
 	}
 }
 
