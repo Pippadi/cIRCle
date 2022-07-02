@@ -10,28 +10,34 @@ import (
 )
 
 type UI struct {
-	MsgEntry *widget.Entry
-	ChatArea *widget.RichText
-	SendBtn  *widget.Button
-	tabItem  *container.TabItem
+	MsgEntry       *widget.Entry
+	ChatArea       *widget.RichText
+	SendBtn        *widget.Button
+	tabItem        *container.TabItem
+	chatAreaScroll *container.Scroll
 }
 
 func newUI(channel string) *UI {
 	b := UI{}
 	b.ChatArea = widget.NewRichText()
 	b.ChatArea.Wrapping = fyne.TextWrapBreak
-	scrollBox := container.NewVScroll(container.NewVBox(b.ChatArea))
+	b.chatAreaScroll = container.NewVScroll(container.NewVBox(b.ChatArea))
 	b.MsgEntry = widget.NewEntry()
 	b.MsgEntry.SetPlaceHolder("Message")
 	b.SendBtn = widget.NewButton("Send", func() {})
 	controls := container.NewVBox(b.MsgEntry, b.SendBtn)
-	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, scrollBox))
+	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, b.chatAreaScroll))
 	return &b
 }
 
-func (b *UI) AddMessageToChat(msg message.Message) {
-	b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: msg.Person + ": " + msg.Content})
+func (b *UI) addTextToChatArea(text string) {
+	b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: text})
 	b.ChatArea.Refresh()
+	b.chatAreaScroll.ScrollToBottom()
+}
+
+func (b *UI) AddMessageToChat(msg message.Message) {
+	b.addTextToChatArea(msg.Person + ": " + msg.Content)
 }
 
 func (b *UI) TabItem() *container.TabItem {
@@ -44,13 +50,14 @@ func (b *UI) SetActive(active bool) {
 }
 
 func (b *UI) HandleCommand(cmd message.Command) {
+	var text string
 	switch cmd.Action {
 	case "quit":
-		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has quit"})
+		text = cmd.Person + " has quit"
 	case "join":
-		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has joined"})
+		text = cmd.Person + " has joined"
 	case "part":
-		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has left"})
+		text = cmd.Person + " has left"
 	}
-	b.ChatArea.Refresh()
+	b.addTextToChatArea(text)
 }

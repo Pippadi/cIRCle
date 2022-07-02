@@ -38,8 +38,8 @@ func newUI(w fyne.Window) *UI {
 	ui.inputFields = container.NewVBox(ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry)
 
 	ui.JoinEntry = widget.NewEntry()
-	ui.JoinEntry.SetPlaceHolder("Channel")
-	ui.JoinBtn = widget.NewButton("Join", func() {})
+	ui.JoinEntry.SetPlaceHolder("Channel or Nick")
+	ui.JoinBtn = widget.NewButton("Chat", func() {})
 
 	connectPane := container.NewVBox(ui.inputFields, ui.ConnectBtn, layout.NewSpacer(), ui.JoinEntry, ui.JoinBtn)
 
