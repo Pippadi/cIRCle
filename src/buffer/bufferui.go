@@ -42,3 +42,13 @@ func (b *UI) SetActive(active bool) {
 	var toset = []fyne.Disableable{b.MsgEntry, b.SendBtn}
 	utils.SetWidgetsActive(active, toset)
 }
+
+func (b *UI) HandleCommand(cmd message.Command) {
+	switch cmd.Action {
+	case "quit":
+		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has quit"})
+	case "join":
+		b.ChatArea.Segments = append(b.ChatArea.Segments, &widget.TextSegment{Text: cmd.Person + " has joined"})
+	}
+	b.ChatArea.Refresh()
+}

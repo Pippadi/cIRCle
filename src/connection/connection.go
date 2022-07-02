@@ -73,7 +73,7 @@ func (conn *Connection) disconnect() {
 
 func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 	switch strings.ToLower(m.Command) {
-	case "001":
+	case "001": // 001 is a welcome event after which channels can be joined
 		conn.UI.SetJoinable(true)
 	case "privmsg":
 		var buf *buffer.Buffer
@@ -88,6 +88,9 @@ func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 			}
 		}
 		buf.Incoming <- message.Message{m.Prefix.Name, m.Trailing()} // m.Prefix.Name is the sender's name
+	case "join":
+		buf := conn.Buffers[m.Params[0]]
+		buf.CommandIn <- message.Command{m.Prefix.Name, "join"}
 	}
 }
 
