@@ -6,7 +6,12 @@ import (
 )
 
 func (conn *Connection) onJoinBtnTapped() {
-	conn.join(conn.UI.JoinEntry.Text)
+	toJoin := conn.UI.JoinEntry.Text
+	if toJoin[0] == '#' {
+		conn.join(conn.UI.JoinEntry.Text)
+	} else {
+		conn.openPM(toJoin)
+	}
 	conn.UI.JoinEntry.SetText("")
 }
 
