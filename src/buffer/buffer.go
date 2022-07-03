@@ -4,7 +4,7 @@ import "github.com/Pippadi/cIRCle/src/message"
 
 type Buffer struct {
 	UI        *UI
-	Channel   string
+	channel   string
 	Incoming  chan message.Message
 	Outgoing  chan message.Message
 	CommandIn chan message.Command
@@ -14,7 +14,7 @@ type Buffer struct {
 func New(channel, nick string) *Buffer {
 	b := Buffer{}
 	b.UI = newUI(channel)
-	b.Channel = channel
+	b.channel = channel
 	b.Incoming, b.Outgoing = make(chan message.Message), make(chan message.Message)
 	b.CommandIn = make(chan message.Command)
 	b.nick = nick
@@ -34,7 +34,7 @@ func New(channel, nick string) *Buffer {
 
 func (b *Buffer) sendMsg() {
 	if b.UI.MsgEntry.Text != "" {
-		msg := message.Message{b.nick, b.UI.MsgEntry.Text}
+		msg := message.Message{From: b.nick, To: b.channel, Content: b.UI.MsgEntry.Text}
 		b.Outgoing <- msg
 		b.UI.AddMessageToChat(msg)
 		b.UI.MsgEntry.SetText("")

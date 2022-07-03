@@ -2,20 +2,20 @@ package connection
 
 import (
 	"errors"
-	"net"
 	"strings"
 
 	"fyne.io/fyne/v2"
 	"github.com/Pippadi/cIRCle/src/buffer"
+	"github.com/Pippadi/cIRCle/src/ircclient"
 	"github.com/Pippadi/cIRCle/src/message"
 	"gopkg.in/irc.v3"
 )
 
 type Connection struct {
-	UI        *UI
-	Nick      string
-	IrcClient *irc.Client
-	Buffers   map[string](*buffer.Buffer)
+	UI      *UI
+	Nick    string
+	client  *ircclient.IRCClient
+	Buffers map[string](*buffer.Buffer)
 }
 
 func New(w fyne.Window) *Connection {
@@ -34,31 +34,18 @@ func (conn *Connection) connect() {
 	}
 
 	addr := conn.UI.AddrEntry.Text + ":" + conn.UI.PortEntry.Text
-	sock, err := net.Dial("tcp", addr)
-	if err != nil {
-		conn.UI.ShowError(err)
-		return
-	}
-
 	conn.Nick = conn.UI.NickEntry.Text
-	clientConfig := irc.ClientConfig{
-		Nick:    conn.Nick,
-		Name:    conn.Nick,
-		User:    conn.Nick,
-		Pass:    conn.UI.PassEntry.Text,
-		Handler: irc.HandlerFunc(conn.handler),
-	}
-	conn.IrcClient = irc.NewClient(sock, clientConfig)
+	conn.client = ircclient.New(addr, conn.UI.PassEntry.Text, conn.Nick, conn.handler)
 
-	conn.UI.JoinBtn.OnTapped = func() {
-		conn.Join(conn.UI.JoinEntry.Text)
-		conn.UI.JoinEntry.SetText("")
-	}
+	conn.UI.JoinBtn.OnTapped = conn.chat
 	conn.UI.ConnectBtn.OnTapped = conn.disconnect
 
+	conn.UI.SetConnectionState(true)
+
 	go func() {
-		conn.UI.SetConnectionState(true)
-		err = conn.IrcClient.Run()
+		if err := conn.client.Run(); err != nil {
+			conn.UI.ShowError(err)
+		}
 		conn.UI.SetConnectionState(false)
 		conn.UI.ConnectBtn.OnTapped = conn.connect
 		for c, _ := range conn.Buffers {
@@ -68,7 +55,7 @@ func (conn *Connection) connect() {
 }
 
 func (conn *Connection) disconnect() {
-	conn.IrcClient.Write("QUIT " + conn.Nick)
+	conn.client.Quit()
 }
 
 func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
@@ -77,7 +64,7 @@ func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 		conn.UI.SetJoinable(true)
 	case "privmsg":
 		var buf *buffer.Buffer
-		if conn.IrcClient.FromChannel(m) {
+		if client.FromChannel(m) {
 			buf = conn.Buffers[m.Params[0]] // m.Params[0] is the channel name. Messages can only come from joined channels.
 		} else {
 			var exists bool
@@ -87,7 +74,7 @@ func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 				buf = conn.Buffers[m.Prefix.Name]
 			}
 		}
-		buf.Incoming <- message.Message{m.Prefix.Name, m.Trailing()} // m.Prefix.Name is the sender's name
+		buf.Incoming <- message.Message{From: m.Prefix.Name, To: conn.Nick, Content: m.Trailing()} // m.Prefix.Name is the sender's name
 	case "join":
 		buf := conn.Buffers[m.Params[0]]
 		buf.CommandIn <- message.Command{m.Prefix.Name, "join"}
@@ -98,22 +85,14 @@ func (conn *Connection) handler(client *irc.Client, m *irc.Message) {
 }
 
 func (conn *Connection) Join(channel string) {
-	conn.IrcClient.Write("JOIN " + channel)
+	conn.client.Join(channel)
 	conn.AddBuffer(channel)
-	conn.ListenAndWriteMessages(channel)
+	go conn.client.ListenAndWriteMessages(conn.Buffers[channel].Outgoing)
 }
 
 func (conn *Connection) OpenPM(who string) {
 	conn.AddBuffer(who)
-	conn.ListenAndWriteMessages(who)
-}
-
-func (conn *Connection) ListenAndWriteMessages(channel string) {
-	go func() {
-		for {
-			conn.IrcClient.Write("PRIVMSG " + channel + " :" + (<-conn.Buffers[channel].Outgoing).Content)
-		}
-	}()
+	go conn.client.ListenAndWriteMessages(conn.Buffers[who].Outgoing)
 }
 
 func (conn *Connection) AddBuffer(channel string) {

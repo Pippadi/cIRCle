@@ -37,7 +37,7 @@ func (b *UI) addTextToChatArea(text string) {
 }
 
 func (b *UI) AddMessageToChat(msg message.Message) {
-	b.addTextToChatArea(msg.Person + ": " + msg.Content)
+	b.addTextToChatArea(msg.From + ": " + msg.Content)
 }
 
 func (b *UI) TabItem() *container.TabItem {

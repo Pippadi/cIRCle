@@ -1,7 +1,8 @@
 package message
 
 type Message struct {
-	Person  string
+	From    string
+	To      string
 	Content string
 }
 
