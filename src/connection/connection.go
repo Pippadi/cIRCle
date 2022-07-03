@@ -58,18 +58,22 @@ func (conn *Connection) disconnect() {
 
 func (conn *Connection) join(channel string) {
 	conn.client.Join(channel)
-	conn.AddBuffer(channel)
+	conn.addBufferIfNotExists(channel)
 }
 
 func (conn *Connection) openPM(who string) {
-	conn.AddBuffer(who)
+	conn.addBufferIfNotExists(who)
 }
 
-func (conn *Connection) AddBuffer(channel string) {
-	buf := buffer.New(channel, conn.Nick)
-	conn.Buffers[channel] = buf
-	conn.UI.AddBuffer(buf)
-	go conn.client.ListenAndWriteMessages(conn.Buffers[channel].Outgoing)
+func (conn *Connection) addBufferIfNotExists(channel string) {
+	buf, exists := conn.Buffers[channel]
+	if !exists {
+		buf = buffer.New(channel, conn.Nick)
+		conn.Buffers[channel] = buf
+		conn.UI.AddBuffer(buf)
+		go conn.client.ListenAndWriteMessages(conn.Buffers[channel].Outgoing)
+	}
+	conn.UI.tabStack.Select(buf.UI.TabItem())
 }
 
 func (conn *Connection) RemoveBuffer(channel string) {
