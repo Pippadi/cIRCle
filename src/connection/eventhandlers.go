@@ -1,6 +1,46 @@
 package connection
 
-func (conn *Connection) chat() {
-	conn.Join(conn.UI.JoinEntry.Text)
+import (
+	"github.com/Pippadi/cIRCle/src/buffer"
+	"github.com/Pippadi/cIRCle/src/message"
+)
+
+func (conn *Connection) onJoinBtnTapped() {
+	conn.join(conn.UI.JoinEntry.Text)
 	conn.UI.JoinEntry.SetText("")
+}
+
+func (conn *Connection) onJoinable() {
+	conn.UI.SetJoinable(true)
+}
+
+func (conn *Connection) onIncomingMessage(msg message.Message) {
+	var buf *buffer.Buffer
+	if msg.To == conn.Nick { // Private message
+		var exists bool
+		buf, exists = conn.Buffers[msg.From]
+		if !exists {
+			conn.openPM(msg.From)
+			buf = conn.Buffers[msg.From]
+		}
+	} else { // Message on channel
+		buf = conn.Buffers[msg.To]
+	}
+	buf.Incoming <- msg
+}
+
+func (conn *Connection) onPersonJoined(person, channel string) {
+	conn.Buffers[channel].CommandIn <- message.Command{person, "join"}
+}
+
+func (conn *Connection) onPersonParted(person, channel string) {
+	conn.Buffers[channel].CommandIn <- message.Command{person, "part"}
+}
+
+func (conn *Connection) onDisconnected() {
+	conn.UI.SetConnectionState(false)
+	conn.UI.ConnectBtn.OnTapped = conn.connect
+	for c, _ := range conn.Buffers {
+		conn.RemoveBuffer(c)
+	}
 }

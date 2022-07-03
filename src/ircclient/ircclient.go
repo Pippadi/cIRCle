@@ -2,6 +2,7 @@ package ircclient
 
 import (
 	"net"
+	"strings"
 
 	"github.com/Pippadi/cIRCle/src/message"
 	"gopkg.in/irc.v3"
@@ -9,15 +10,22 @@ import (
 
 // Just a simple wrapper
 type IRCClient struct {
-	Nick   string
-	irc    *irc.Client
-	addr   string
-	config irc.ClientConfig
+	Nick           string
+	irc            *irc.Client
+	addr           string
+	config         irc.ClientConfig
+	OnJoinable     JoinableHandler
+	OnMessage      MessageHandler
+	OnPersonJoined PersonJoinedHandler
+	OnPersonParted PersonPartedHandler
 }
 
-type HandlerFunc irc.HandlerFunc
+type MessageHandler func(msg message.Message)
+type JoinableHandler func()
+type PersonJoinedHandler func(person, channel string)
+type PersonPartedHandler func(person, channel string)
 
-func New(addr, password, nick string, handler HandlerFunc) *IRCClient {
+func New(addr, password, nick string) *IRCClient {
 	c := IRCClient{Nick: nick}
 	c.addr = addr
 
@@ -26,7 +34,7 @@ func New(addr, password, nick string, handler HandlerFunc) *IRCClient {
 		Name:    c.Nick,
 		User:    c.Nick,
 		Pass:    password,
-		Handler: irc.HandlerFunc(handler),
+		Handler: irc.HandlerFunc(c.handler),
 	}
 	return &c
 }
@@ -40,6 +48,27 @@ func (c *IRCClient) Run() error {
 	c.irc = irc.NewClient(sock, c.config)
 	c.irc.Run()
 	return nil
+}
+
+func (c *IRCClient) handler(cl *irc.Client, m *irc.Message) {
+	switch strings.ToLower(m.Command) {
+	case "001": // 001 is a welcome event after which channels can be joined
+		c.OnJoinable()
+	case "join":
+		c.OnPersonJoined(m.Prefix.Name, m.Params[0])
+	case "part":
+		c.OnPersonParted(m.Prefix.Name, m.Params[0])
+	case "privmsg":
+		var msg message.Message
+		msg.From = m.Prefix.Name // Name of sender
+		msg.Content = m.Trailing()
+		if c.irc.FromChannel(m) {
+			msg.To = m.Params[0] // m.Params[0] is the channel name
+		} else {
+			msg.To = c.Nick
+		}
+		c.OnMessage(msg)
+	}
 }
 
 func (c *IRCClient) Join(channel string) {
