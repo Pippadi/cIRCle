@@ -1,12 +1,18 @@
 package connection
 
 import (
+	"errors"
+
 	"github.com/Pippadi/cIRCle/src/buffer"
 	"github.com/Pippadi/cIRCle/src/message"
 )
 
 func (conn *Connection) onJoinBtnTapped() {
 	toJoin := conn.UI.JoinEntry.Text
+	if toJoin == "" {
+		conn.UI.ShowError(errors.New("Invalid channel/nick"))
+		return
+	}
 	if toJoin[0] == '#' {
 		conn.join(conn.UI.JoinEntry.Text)
 	} else {
