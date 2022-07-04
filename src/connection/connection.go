@@ -1,8 +1,6 @@
 package connection
 
 import (
-	"errors"
-
 	"fyne.io/fyne/v2"
 	"github.com/Pippadi/cIRCle/src/buffer"
 	"github.com/Pippadi/cIRCle/src/ircclient"
@@ -25,8 +23,8 @@ func New(w fyne.Window) *Connection {
 }
 
 func (conn *Connection) connect() {
-	if !conn.UI.ConnParamsValid() {
-		conn.UI.ShowError(errors.New("Invalid connection parameters"))
+	if err := conn.UI.ValidateConnParams(); err != nil {
+		conn.UI.ShowError(err)
 		return
 	}
 

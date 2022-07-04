@@ -1,6 +1,9 @@
 package connection
 
 import (
+	"errors"
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
@@ -25,15 +28,23 @@ type UI struct {
 
 func newUI(w fyne.Window) *UI {
 	ui := UI{}
+
 	ui.AddrEntry = widget.NewEntry()
 	ui.AddrEntry.SetPlaceHolder("Address")
+	ui.AddrEntry.Validator = validAddrString
+
 	ui.PortEntry = widget.NewEntry()
 	ui.PortEntry.SetPlaceHolder("Port")
+	ui.PortEntry.Validator = validPortString
 	ui.PortEntry.SetText("6667")
+
 	ui.NickEntry = widget.NewEntry()
 	ui.NickEntry.SetPlaceHolder("Nick")
+	ui.NickEntry.Validator = validNickString
+
 	ui.PassEntry = widget.NewEntry()
 	ui.PassEntry.SetPlaceHolder("Password")
+
 	ui.ConnectBtn = widget.NewButton("Connect", func() {})
 	ui.inputFields = container.NewVBox(ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry)
 
@@ -84,6 +95,40 @@ func (ui *UI) ShowError(err error) {
 	dialog.ShowError(err, ui.window)
 }
 
-func (ui *UI) ConnParamsValid() bool {
-	return ui.AddrEntry.Text != "" && ui.NickEntry.Text != "" && ui.PortEntry.Text != ""
+func (ui *UI) ValidateConnParams() error {
+	if err := ui.AddrEntry.Validate(); err != nil {
+		return err
+	}
+	if err := ui.NickEntry.Validate(); err != nil {
+		return err
+	}
+	if err := ui.PortEntry.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validPortString(p string) error {
+	port, err := strconv.Atoi(p)
+	if err != nil {
+		return errors.New("Port must be numeric")
+	}
+	if port > 65535 || port < 0 {
+		return errors.New("Port out of range")
+	}
+	return nil
+}
+
+func validAddrString(addr string) error {
+	if addr == "" {
+		return errors.New("Address cannot be empty")
+	}
+	return nil
+}
+
+func validNickString(nick string) error {
+	if nick == "" {
+		return errors.New("Nick cannot be empty")
+	}
+	return nil
 }
