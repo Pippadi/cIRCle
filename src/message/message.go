@@ -9,4 +9,5 @@ type Message struct {
 type Command struct {
 	Person string
 	Action string
+	Args   []string
 }

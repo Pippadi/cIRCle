@@ -18,12 +18,16 @@ type IRCClient struct {
 	OnMessage      MessageHandler
 	OnPersonJoined PersonJoinedHandler
 	OnPersonParted PersonPartedHandler
+	OnNames        NamesHandler
+	OnPersonQuit   QuitHandler
 }
 
 type MessageHandler func(msg message.Message)
 type JoinableHandler func()
 type PersonJoinedHandler func(person, channel string)
 type PersonPartedHandler func(person, channel string)
+type NamesHandler func(channel string, names []string)
+type QuitHandler func(person string)
 
 func New(addr, password, nick string) *IRCClient {
 	c := IRCClient{Nick: nick}
@@ -58,6 +62,8 @@ func (c *IRCClient) handler(cl *irc.Client, m *irc.Message) {
 		c.OnPersonJoined(m.Prefix.Name, m.Params[0])
 	case "part":
 		c.OnPersonParted(m.Prefix.Name, m.Params[0])
+	case "quit":
+		c.OnPersonQuit(m.Prefix.Name)
 	case "privmsg":
 		var msg message.Message
 		msg.From = m.Prefix.Name // Name of sender
@@ -68,6 +74,8 @@ func (c *IRCClient) handler(cl *irc.Client, m *irc.Message) {
 			msg.To = c.Nick
 		}
 		c.OnMessage(msg)
+	case "353": // NAMES (people online)
+		c.OnNames(m.Params[len(m.Params)-2], strings.Split(m.Trailing(), " ")) // m.Params[len(m.Params)-2] is the channel
 	}
 }
 

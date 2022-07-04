@@ -50,14 +50,12 @@ func (b *UI) SetActive(active bool) {
 }
 
 func (b *UI) HandleCommand(cmd message.Command) {
-	var text string
 	switch cmd.Action {
 	case "quit":
-		text = cmd.Person + " has quit"
+		b.addTextToChatArea(cmd.Person + " has quit")
 	case "join":
-		text = cmd.Person + " has joined"
+		b.addTextToChatArea(cmd.Person + " has joined")
 	case "part":
-		text = cmd.Person + " has left"
+		b.addTextToChatArea(cmd.Person + " has left")
 	}
-	b.addTextToChatArea(text)
 }

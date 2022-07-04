@@ -41,11 +41,17 @@ func (conn *Connection) onIncomingMessage(msg message.Message) {
 }
 
 func (conn *Connection) onPersonJoined(person, channel string) {
-	conn.Buffers[channel].CommandIn <- message.Command{person, "join"}
+	conn.Buffers[channel].CommandIn <- message.Command{Person: person, Action: "join"}
 }
 
 func (conn *Connection) onPersonParted(person, channel string) {
-	conn.Buffers[channel].CommandIn <- message.Command{person, "part"}
+	conn.Buffers[channel].CommandIn <- message.Command{Person: person, Action: "part"}
+}
+
+func (conn *Connection) onPersonQuit(person string) {
+	for _, buf := range conn.Buffers {
+		buf.CommandIn <- message.Command{Person: person, Action: "quit"}
+	}
 }
 
 func (conn *Connection) onDisconnected() {
@@ -54,4 +60,8 @@ func (conn *Connection) onDisconnected() {
 	for c, _ := range conn.Buffers {
 		conn.RemoveBuffer(c)
 	}
+}
+
+func (conn *Connection) onNames(channel string, names []string) {
+	conn.Buffers[channel].CommandIn <- message.Command{Action: "names", Args: names}
 }

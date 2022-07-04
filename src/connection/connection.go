@@ -36,6 +36,8 @@ func (conn *Connection) connect() {
 	conn.client.OnMessage = conn.onIncomingMessage
 	conn.client.OnPersonJoined = conn.onPersonJoined
 	conn.client.OnPersonParted = conn.onPersonParted
+	conn.client.OnPersonQuit = conn.onPersonQuit
+	conn.client.OnNames = conn.onNames
 
 	conn.UI.JoinBtn.OnTapped = conn.onJoinBtnTapped
 	conn.UI.ConnectBtn.OnTapped = conn.disconnect
