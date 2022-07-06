@@ -40,6 +40,7 @@ func (conn *Connection) connect() {
 	conn.client.OnNames = conn.onNames
 
 	conn.UI.JoinBtn.OnTapped = conn.onJoinBtnTapped
+	conn.UI.JoinEntry.OnEnter = conn.onJoinBtnTapped
 	conn.UI.ConnectBtn.OnTapped = conn.disconnect
 
 	conn.UI.SetConnectionState(true)

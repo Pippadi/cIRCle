@@ -22,7 +22,7 @@ type UI struct {
 	NickEntry   *widget.Entry
 	PassEntry   *widget.Entry
 	ConnectBtn  *widget.Button
-	JoinEntry   *widget.Entry
+	JoinEntry   *widgets.EnterCatchingEntry
 	JoinBtn     *widget.Button
 	window      fyne.Window
 }
@@ -49,7 +49,7 @@ func newUI(w fyne.Window) *UI {
 	ui.ConnectBtn = widget.NewButton("Connect", func() {})
 	ui.inputFields = container.NewVBox(ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry)
 
-	ui.JoinEntry = widget.NewEntry()
+	ui.JoinEntry = widgets.NewEnterCatchingEntry()
 	ui.JoinEntry.SetPlaceHolder("Channel or Nick")
 	ui.JoinBtn = widget.NewButton("Chat", func() {})
 
