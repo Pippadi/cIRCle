@@ -10,7 +10,7 @@ import (
 )
 
 type UI struct {
-	MsgEntry       *widget.Entry
+	MsgEntry       *utils.EnterCatchingEntry
 	ChatArea       *widget.RichText
 	SendBtn        *widget.Button
 	tabItem        *container.TabItem
@@ -22,7 +22,7 @@ func newUI(channel string) *UI {
 	b.ChatArea = widget.NewRichText()
 	b.ChatArea.Wrapping = fyne.TextWrapBreak
 	b.chatAreaScroll = container.NewVScroll(container.NewVBox(b.ChatArea))
-	b.MsgEntry = widget.NewEntry()
+	b.MsgEntry = utils.NewEnterCatchingEntry()
 	b.MsgEntry.SetPlaceHolder("Message")
 	b.SendBtn = widget.NewButton("Send", func() {})
 	controls := utils.NewEntryButtonContainer(b.MsgEntry, b.SendBtn)

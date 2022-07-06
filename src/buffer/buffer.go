@@ -24,6 +24,7 @@ func New(channel, nick string) *Buffer {
 	b.nicklist = make([]string, 0)
 	b.nick = nick
 	b.UI.SendBtn.OnTapped = b.sendMsg
+	b.UI.MsgEntry.OnEnter = b.sendMsg
 
 	go func() {
 		for {
