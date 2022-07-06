@@ -7,10 +7,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/Pippadi/cIRCle/src/message"
 	"github.com/Pippadi/cIRCle/src/utils"
+	"github.com/Pippadi/cIRCle/src/widgets"
 )
 
 type UI struct {
-	MsgEntry       *utils.EnterCatchingEntry
+	MsgEntry       *widgets.EnterCatchingEntry
 	ChatArea       *widget.RichText
 	SendBtn        *widget.Button
 	tabItem        *container.TabItem
@@ -22,10 +23,10 @@ func newUI(channel string) *UI {
 	b.ChatArea = widget.NewRichText()
 	b.ChatArea.Wrapping = fyne.TextWrapBreak
 	b.chatAreaScroll = container.NewVScroll(container.NewVBox(b.ChatArea))
-	b.MsgEntry = utils.NewEnterCatchingEntry()
+	b.MsgEntry = widgets.NewEnterCatchingEntry()
 	b.MsgEntry.SetPlaceHolder("Message")
 	b.SendBtn = widget.NewButton("Send", func() {})
-	controls := utils.NewEntryButtonContainer(b.MsgEntry, b.SendBtn)
+	controls := widgets.NewEntryButtonContainer(b.MsgEntry, b.SendBtn)
 	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, b.chatAreaScroll))
 	return &b
 }

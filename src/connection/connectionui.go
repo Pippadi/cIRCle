@@ -11,13 +11,14 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/Pippadi/cIRCle/src/buffer"
 	"github.com/Pippadi/cIRCle/src/utils"
+	"github.com/Pippadi/cIRCle/src/widgets"
 )
 
 type UI struct {
 	inputFields *fyne.Container
 	tabStack    *container.AppTabs
 	AddrEntry   *widget.Entry
-	PortEntry   *utils.NumericEntry
+	PortEntry   *widgets.NumericEntry
 	NickEntry   *widget.Entry
 	PassEntry   *widget.Entry
 	ConnectBtn  *widget.Button
@@ -33,7 +34,7 @@ func newUI(w fyne.Window) *UI {
 	ui.AddrEntry.SetPlaceHolder("Address")
 	ui.AddrEntry.Validator = validAddrString
 
-	ui.PortEntry = utils.NewNumericEntry()
+	ui.PortEntry = widgets.NewNumericEntry()
 	ui.PortEntry.SetPlaceHolder("Port")
 	ui.PortEntry.Validator = validPortString
 	ui.PortEntry.SetText("6667")
@@ -52,7 +53,7 @@ func newUI(w fyne.Window) *UI {
 	ui.JoinEntry.SetPlaceHolder("Channel or Nick")
 	ui.JoinBtn = widget.NewButton("Chat", func() {})
 
-	joinctrls := utils.NewEntryButtonContainer(ui.JoinEntry, ui.JoinBtn)
+	joinctrls := widgets.NewEntryButtonContainer(ui.JoinEntry, ui.JoinBtn)
 
 	connectPane := container.NewVBox(ui.inputFields, ui.ConnectBtn, layout.NewSpacer(), joinctrls)
 
