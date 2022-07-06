@@ -52,7 +52,9 @@ func newUI(w fyne.Window) *UI {
 	ui.JoinEntry.SetPlaceHolder("Channel or Nick")
 	ui.JoinBtn = widget.NewButton("Chat", func() {})
 
-	connectPane := container.NewVBox(ui.inputFields, ui.ConnectBtn, layout.NewSpacer(), ui.JoinEntry, ui.JoinBtn)
+	joinctrls := utils.NewEntryButtonContainer(ui.JoinEntry, ui.JoinBtn)
+
+	connectPane := container.NewVBox(ui.inputFields, ui.ConnectBtn, layout.NewSpacer(), joinctrls)
 
 	ui.tabStack = container.NewAppTabs(container.NewTabItem("Connect", connectPane))
 

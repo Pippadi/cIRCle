@@ -25,7 +25,7 @@ func newUI(channel string) *UI {
 	b.MsgEntry = widget.NewEntry()
 	b.MsgEntry.SetPlaceHolder("Message")
 	b.SendBtn = widget.NewButton("Send", func() {})
-	controls := container.NewVBox(b.MsgEntry, b.SendBtn)
+	controls := utils.NewEntryButtonContainer(b.MsgEntry, b.SendBtn)
 	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, b.chatAreaScroll))
 	return &b
 }
