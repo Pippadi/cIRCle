@@ -17,7 +17,7 @@ type UI struct {
 	inputFields *fyne.Container
 	tabStack    *container.AppTabs
 	AddrEntry   *widget.Entry
-	PortEntry   *widget.Entry
+	PortEntry   *utils.NumericEntry
 	NickEntry   *widget.Entry
 	PassEntry   *widget.Entry
 	ConnectBtn  *widget.Button
@@ -33,7 +33,7 @@ func newUI(w fyne.Window) *UI {
 	ui.AddrEntry.SetPlaceHolder("Address")
 	ui.AddrEntry.Validator = validAddrString
 
-	ui.PortEntry = widget.NewEntry()
+	ui.PortEntry = utils.NewNumericEntry()
 	ui.PortEntry.SetPlaceHolder("Port")
 	ui.PortEntry.Validator = validPortString
 	ui.PortEntry.SetText("6667")
@@ -43,7 +43,7 @@ func newUI(w fyne.Window) *UI {
 	ui.NickEntry.Validator = validNickString
 
 	ui.PassEntry = widget.NewEntry()
-	ui.PassEntry.SetPlaceHolder("Password")
+	ui.PassEntry.SetPlaceHolder("Password (optional)")
 
 	ui.ConnectBtn = widget.NewButton("Connect", func() {})
 	ui.inputFields = container.NewVBox(ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry)
