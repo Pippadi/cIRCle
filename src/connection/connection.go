@@ -7,18 +7,21 @@ import (
 )
 
 type Connection struct {
+	app     fyne.App
 	UI      *UI
 	Nick    string
 	client  *ircclient.IRCClient
 	Buffers map[string](*buffer.Buffer)
 }
 
-func New(w fyne.Window) *Connection {
+func New(w fyne.Window, a fyne.App) *Connection {
 	c := Connection{}
+	c.app = a
 	c.UI = newUI(w)
 	c.UI.ConnectBtn.OnTapped = c.connect
 	c.Buffers = make(map[string](*buffer.Buffer))
 	c.UI.SetConnectionState(false)
+	c.loadConfig()
 	return &c
 }
 
@@ -77,7 +80,7 @@ func (conn *Connection) addBufferIfNotExists(channel string) {
 	conn.UI.tabStack.Select(buf.UI.TabItem())
 }
 
-func (conn *Connection) RemoveBuffer(channel string) {
+func (conn *Connection) removeBuffer(channel string) {
 	conn.UI.RemoveBuffer(conn.Buffers[channel])
 	delete(conn.Buffers, channel)
 }

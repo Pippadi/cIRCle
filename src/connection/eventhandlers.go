@@ -23,6 +23,7 @@ func (conn *Connection) onJoinBtnTapped() {
 
 func (conn *Connection) onJoinable() {
 	conn.UI.SetJoinable(true)
+	conn.autojoin()
 }
 
 func (conn *Connection) onIncomingMessage(msg message.Message) {
@@ -57,8 +58,9 @@ func (conn *Connection) onPersonQuit(person string) {
 func (conn *Connection) onDisconnected() {
 	conn.UI.SetConnectionState(false)
 	conn.UI.ConnectBtn.OnTapped = conn.connect
+	conn.PersistSettings()
 	for c, _ := range conn.Buffers {
-		conn.RemoveBuffer(c)
+		conn.removeBuffer(c)
 	}
 }
 

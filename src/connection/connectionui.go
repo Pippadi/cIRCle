@@ -37,7 +37,6 @@ func newUI(w fyne.Window) *UI {
 	ui.PortEntry = widgets.NewNumericEntry()
 	ui.PortEntry.SetPlaceHolder("Port")
 	ui.PortEntry.Validator = validPortString
-	ui.PortEntry.SetText("6667")
 
 	ui.NickEntry = widget.NewEntry()
 	ui.NickEntry.SetPlaceHolder("Nick")
@@ -70,9 +69,7 @@ func (ui *UI) CanvasObject() fyne.CanvasObject {
 }
 
 func (ui *UI) SetConnectionState(connected bool) {
-	//var enableWhenConnected = []fyne.Disableable{}
 	var disableWhenConnected = []fyne.Disableable{ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry}
-	//utils.SetWidgetsActive(connected, enableWhenConnected)
 	utils.SetWidgetsActive(!connected, disableWhenConnected)
 	if connected {
 		ui.ConnectBtn.SetText("Disconnect")

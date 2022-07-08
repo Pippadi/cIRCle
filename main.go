@@ -7,11 +7,12 @@ import (
 )
 
 func main() {
-	a := app.New()
+	a := app.NewWithID("com.plootarg.circle")
 	w := a.NewWindow("cIRCle")
-	conn := connection.New(w)
+	conn := connection.New(w, a)
 
 	w.SetContent(conn.UI.CanvasObject())
 	w.Resize(fyne.NewSize(400, 450))
 	w.ShowAndRun()
+	conn.PersistSettings()
 }
