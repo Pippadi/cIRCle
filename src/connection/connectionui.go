@@ -45,6 +45,7 @@ func newUI(w fyne.Window) *UI {
 
 	ui.PassEntry = widget.NewEntry()
 	ui.PassEntry.SetPlaceHolder("Password (optional)")
+	ui.PassEntry.Password = true
 
 	ui.ConnectBtn = widget.NewButton("Connect", func() {})
 	ui.inputFields = container.NewVBox(ui.AddrEntry, ui.PortEntry, ui.NickEntry, ui.PassEntry)
