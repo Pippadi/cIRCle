@@ -4,14 +4,16 @@ import (
 	"fyne.io/fyne/v2"
 	"github.com/Pippadi/cIRCle/src/buffer"
 	"github.com/Pippadi/cIRCle/src/ircclient"
+	"github.com/Pippadi/cIRCle/src/utils"
 )
 
 type Connection struct {
-	app     fyne.App
-	UI      *UI
-	Nick    string
-	client  *ircclient.IRCClient
-	Buffers map[string](*buffer.Buffer)
+	app      fyne.App
+	UI       *UI
+	Nick     string
+	client   *ircclient.IRCClient
+	Buffers  map[string](*buffer.Buffer)
+	autojoin []string
 }
 
 func New(w fyne.Window, a fyne.App) *Connection {
@@ -21,7 +23,6 @@ func New(w fyne.Window, a fyne.App) *Connection {
 	c.UI.ConnectBtn.OnTapped = c.connect
 	c.Buffers = make(map[string](*buffer.Buffer))
 	c.UI.SetConnectionState(false)
-	c.loadConfig()
 	return &c
 }
 
@@ -63,6 +64,9 @@ func (conn *Connection) disconnect() {
 func (conn *Connection) join(channel string) {
 	conn.client.Join(channel)
 	conn.addBufferIfNotExists(channel)
+	if !utils.In(channel, conn.autojoin) {
+		conn.autojoin = append(conn.autojoin, channel)
+	}
 }
 
 func (conn *Connection) openPM(who string) {
