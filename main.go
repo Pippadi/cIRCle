@@ -10,11 +10,12 @@ import (
 func main() {
 	a := app.NewWithID("com.plootarg.circle")
 	w := a.NewWindow("cIRCle")
-	conn := connection.New(w, a)
-	conn.LoadConfig(persistence.LoadConnConfig())
+	p := persistence.New(a)
+	conn := connection.New(w)
+	conn.LoadConfig(p.LoadConnConfig())
 
 	w.SetContent(conn.UI.CanvasObject())
 	w.Resize(fyne.NewSize(400, 450))
 	w.ShowAndRun()
-	persistence.DumpConnConfig(conn.GetConfig())
+	p.DumpConnConfig(conn.GetConfig())
 }

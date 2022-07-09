@@ -8,7 +8,6 @@ import (
 )
 
 type Connection struct {
-	app      fyne.App
 	UI       *UI
 	Nick     string
 	client   *ircclient.IRCClient
@@ -16,9 +15,8 @@ type Connection struct {
 	autojoin []string
 }
 
-func New(w fyne.Window, a fyne.App) *Connection {
+func New(w fyne.Window) *Connection {
 	c := Connection{}
-	c.app = a
 	c.UI = newUI(w)
 	c.UI.ConnectBtn.OnTapped = c.connect
 	c.Buffers = make(map[string](*buffer.Buffer))
