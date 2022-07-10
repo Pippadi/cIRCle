@@ -3,6 +3,7 @@ package buffer
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/Pippadi/cIRCle/src/message"
@@ -16,17 +17,32 @@ type UI struct {
 	SendBtn        *widget.Button
 	tabItem        *container.TabItem
 	chatAreaScroll *container.Scroll
+	nickListWidget *widget.List
+	nickList       binding.ExternalStringList
 }
 
-func newUI(channel string) *UI {
+func newUI(channel string, nicklist *[]string) *UI {
 	b := UI{}
+
 	b.ChatArea = widget.NewRichText()
 	b.ChatArea.Wrapping = fyne.TextWrapBreak
 	b.chatAreaScroll = container.NewVScroll(container.NewVBox(b.ChatArea))
+
 	b.MsgEntry = widgets.NewEnterCatchingEntry()
 	b.MsgEntry.SetPlaceHolder("Message")
+
 	b.SendBtn = widget.NewButton("Send", func() {})
-	controls := widgets.NewEntryButtonContainer(b.MsgEntry, b.SendBtn)
+
+	b.nickList = binding.BindStringList(nicklist)
+	b.nickListWidget = widget.NewListWithData(
+		b.nickList,
+		func() fyne.CanvasObject { return widget.NewLabel("template") },
+		func(i binding.DataItem, o fyne.CanvasObject) {
+			o.(*widget.Label).Bind(i.(binding.String))
+		})
+	b.nickList.Reload()
+
+	controls := container.NewVBox(b.nickListWidget, widgets.NewEntryButtonContainer(b.MsgEntry, b.SendBtn))
 	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, b.chatAreaScroll))
 	return &b
 }
@@ -59,4 +75,5 @@ func (b *UI) HandleCommand(cmd message.Command) {
 	case "part":
 		b.addTextToChatArea(cmd.Person + " has left")
 	}
+	b.nickList.Reload()
 }
