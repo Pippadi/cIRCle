@@ -45,8 +45,15 @@ func newUI(channel string, nicklist *[]string) *UI {
 	b.nickList.Reload()
 
 	controls := container.New(layout.NewBorderLayout(nil, nil, b.CloseBtn, b.SendBtn), b.CloseBtn, b.SendBtn, b.MsgEntry)
-	splitview := container.NewHSplit(b.chatAreaScroll, b.nickListWidget)
-	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, splitview))
+
+	if channel[0] == '#' {
+		splitView := container.NewVSplit(b.chatAreaScroll, b.nickListWidget)
+		splitView.SetOffset(0.8) // Make the nick list smaller than the chat area
+		b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, splitView))
+	} else {
+		b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, b.chatAreaScroll))
+	}
+
 	return &b
 }
 
