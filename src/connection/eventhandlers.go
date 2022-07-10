@@ -48,7 +48,9 @@ func (conn *Connection) onPersonJoined(person, channel string) {
 }
 
 func (conn *Connection) onPersonParted(person, channel string) {
-	conn.Buffers[channel].CommandIn <- message.Command{Person: person, Action: "part"}
+	if person != conn.Nick {
+		conn.Buffers[channel].CommandIn <- message.Command{Person: person, Action: "part"}
+	}
 }
 
 func (conn *Connection) onPersonQuit(person string) {

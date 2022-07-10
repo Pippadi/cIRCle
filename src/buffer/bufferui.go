@@ -15,6 +15,7 @@ type UI struct {
 	MsgEntry       *widgets.EnterCatchingEntry
 	ChatArea       *widget.RichText
 	SendBtn        *widget.Button
+	CloseBtn       *widget.Button
 	tabItem        *container.TabItem
 	chatAreaScroll *container.Scroll
 	nickListWidget *widget.List
@@ -32,6 +33,7 @@ func newUI(channel string, nicklist *[]string) *UI {
 	b.MsgEntry.SetPlaceHolder("Message")
 
 	b.SendBtn = widget.NewButton("Send", func() {})
+	b.CloseBtn = widget.NewButton("Close", func() {})
 
 	b.nickList = binding.BindStringList(nicklist)
 	b.nickListWidget = widget.NewListWithData(
@@ -43,7 +45,8 @@ func newUI(channel string, nicklist *[]string) *UI {
 	b.nickList.Reload()
 
 	controls := widgets.NewEntryButtonContainer(b.MsgEntry, b.SendBtn)
-	splitview := container.NewVSplit(b.chatAreaScroll, b.nickListWidget)
+	rightPane := container.NewVBox(b.CloseBtn, b.nickListWidget)
+	splitview := container.NewHSplit(b.chatAreaScroll, rightPane)
 	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, splitview))
 	return &b
 }

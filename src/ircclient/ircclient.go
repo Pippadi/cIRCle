@@ -83,6 +83,10 @@ func (c *IRCClient) Join(channel string) {
 	c.irc.Write("JOIN " + channel)
 }
 
+func (c *IRCClient) Part(channel string) {
+	c.irc.Write("PART " + channel)
+}
+
 func (c *IRCClient) Quit() {
 	c.irc.Write("QUIT cIRCle")
 }

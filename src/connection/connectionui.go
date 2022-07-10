@@ -89,6 +89,7 @@ func (ui *UI) AddBuffer(buf *buffer.Buffer) {
 }
 
 func (ui *UI) RemoveBuffer(buf *buffer.Buffer) {
+	ui.tabStack.Select(ui.tabStack.Items[0])
 	ui.tabStack.Remove(buf.UI.TabItem())
 }
 

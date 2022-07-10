@@ -4,6 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"github.com/Pippadi/cIRCle/src/buffer"
 	"github.com/Pippadi/cIRCle/src/ircclient"
+	"github.com/Pippadi/cIRCle/src/message"
 	"github.com/Pippadi/cIRCle/src/utils"
 )
 
@@ -65,10 +66,12 @@ func (conn *Connection) join(channel string) {
 	if !utils.In(channel, conn.autojoin) {
 		conn.autojoin = append(conn.autojoin, channel)
 	}
+	go conn.handleCommandFromBuffer(channel)
 }
 
 func (conn *Connection) openPM(who string) {
 	conn.addBufferIfNotExists(who)
+	go conn.handleCommandFromBuffer(who)
 }
 
 func (conn *Connection) addBufferIfNotExists(channel string) {
@@ -85,4 +88,20 @@ func (conn *Connection) addBufferIfNotExists(channel string) {
 func (conn *Connection) removeBuffer(channel string) {
 	conn.UI.RemoveBuffer(conn.Buffers[channel])
 	delete(conn.Buffers, channel)
+}
+
+func (conn *Connection) handleCommandFromBuffer(channel string) {
+	var cmd message.Command
+	shouldContinue := true
+	for shouldContinue {
+		cmd = <-conn.Buffers[channel].CommandOut
+		switch cmd.Action {
+		case "part":
+			if channel[0] == '#' {
+				conn.client.Part(channel)
+			}
+			conn.removeBuffer(channel)
+			shouldContinue = false
+		}
+	}
 }

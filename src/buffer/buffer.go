@@ -6,20 +6,21 @@ import (
 )
 
 type Buffer struct {
-	UI        *UI
-	channel   string
-	Incoming  chan message.Message
-	Outgoing  chan message.Message
-	CommandIn chan message.Command
-	nicklist  []string
-	nick      string
+	UI         *UI
+	channel    string
+	Incoming   chan message.Message
+	Outgoing   chan message.Message
+	CommandIn  chan message.Command
+	CommandOut chan message.Command
+	nicklist   []string
+	nick       string
 }
 
 func New(channel, nick string) *Buffer {
 	b := Buffer{}
 	b.channel = channel
 	b.Incoming, b.Outgoing = make(chan message.Message), make(chan message.Message)
-	b.CommandIn = make(chan message.Command)
+	b.CommandIn, b.CommandOut = make(chan message.Command), make(chan message.Command)
 	b.nicklist = make([]string, 0)
 	//b.nicklist = append(b.nicklist, nick)
 	b.nick = nick
@@ -27,6 +28,9 @@ func New(channel, nick string) *Buffer {
 	b.UI = newUI(channel, &b.nicklist)
 	b.UI.SendBtn.OnTapped = b.sendMsg
 	b.UI.MsgEntry.OnEnter = b.sendMsg
+	b.UI.CloseBtn.OnTapped = func() {
+		b.CommandOut <- message.Command{Action: "part", Person: nick}
+	}
 
 	go func() {
 		for {
