@@ -99,6 +99,7 @@ func (conn *Connection) handleCommandFromBuffer(channel string) {
 		case "part":
 			if channel[0] == '#' {
 				conn.client.Part(channel)
+				utils.RemoveAtIndex(utils.IndexOf(channel, conn.autojoin), conn.autojoin)
 			}
 			conn.removeBuffer(channel)
 			shouldContinue = false
