@@ -42,8 +42,9 @@ func newUI(channel string, nicklist *[]string) *UI {
 		})
 	b.nickList.Reload()
 
-	controls := container.NewVBox(b.nickListWidget, widgets.NewEntryButtonContainer(b.MsgEntry, b.SendBtn))
-	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, b.chatAreaScroll))
+	controls := widgets.NewEntryButtonContainer(b.MsgEntry, b.SendBtn)
+	splitview := container.NewVSplit(b.chatAreaScroll, b.nickListWidget)
+	b.tabItem = container.NewTabItem(channel, container.New(layout.NewBorderLayout(nil, controls, nil, nil), controls, splitview))
 	return &b
 }
 
