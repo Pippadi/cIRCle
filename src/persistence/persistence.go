@@ -22,14 +22,18 @@ func New(a fyne.App) *Persistor {
 func (p *Persistor) LoadConnConfig() *connection.Config {
 	c := &connection.Config{Port: 6667}
 	configs := make([]connection.Config, 0) // To allow for multiple connections in the future
-	if cr, err := storage.CanRead(p.uri); cr {
-		checkError(err)
+	ex, err := storage.Exists(p.uri)
+	checkError(err)
+	cr, err := storage.CanRead(p.uri)
+	checkError(err)
+	if ex && cr {
+		log.Println(ex, cr)
 		reader, err := storage.Reader(p.uri)
 		checkError(err)
 		bytes, err := ioutil.ReadAll(reader)
 		checkError(err)
-		json.Unmarshal(bytes, &configs)
-		reader.Close()
+		checkError(json.Unmarshal(bytes, &configs))
+		checkError(reader.Close())
 	}
 	if len(configs) > 0 {
 		c = &(configs[0])

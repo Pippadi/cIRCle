@@ -16,6 +16,6 @@ func main() {
 
 	w.SetContent(conn.UI.CanvasObject())
 	w.Resize(fyne.NewSize(400, 450))
+	a.Lifecycle().SetOnStopped(func() { p.DumpConnConfig(conn.GetConfig()) })
 	w.ShowAndRun()
-	p.DumpConnConfig(conn.GetConfig())
 }
