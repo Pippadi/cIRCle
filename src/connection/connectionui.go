@@ -2,7 +2,6 @@ package connection
 
 import (
 	"errors"
-	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -18,7 +17,7 @@ type UI struct {
 	inputFields *fyne.Container
 	tabStack    *container.AppTabs
 	AddrEntry   *widgets.HostEntry
-	PortEntry   *widgets.NumericEntry
+	PortEntry   *widgets.PortEntry
 	NickEntry   *widget.Entry
 	PassEntry   *widget.Entry
 	ConnectBtn  *widget.Button
@@ -32,9 +31,7 @@ func newUI(w fyne.Window) *UI {
 
 	ui.AddrEntry = widgets.NewHostEntry()
 
-	ui.PortEntry = widgets.NewNumericEntry()
-	ui.PortEntry.SetPlaceHolder("Port")
-	ui.PortEntry.Validator = validPortString
+	ui.PortEntry = widgets.NewPortEntry()
 
 	ui.NickEntry = widget.NewEntry()
 	ui.NickEntry.SetPlaceHolder("Nick")
@@ -104,17 +101,6 @@ func (ui *UI) ValidateConnParams() error {
 	}
 	if err := ui.PortEntry.Validate(); err != nil {
 		return err
-	}
-	return nil
-}
-
-func validPortString(p string) error {
-	port, err := strconv.Atoi(p)
-	if err != nil {
-		return errors.New("Port must be numeric")
-	}
-	if port > 65535 || port < 0 {
-		return errors.New("Port out of range")
 	}
 	return nil
 }

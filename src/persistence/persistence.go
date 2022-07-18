@@ -27,7 +27,6 @@ func (p *Persistor) LoadConnConfig() *connection.Config {
 	cr, err := storage.CanRead(p.uri)
 	checkError(err)
 	if ex && cr {
-		log.Println(ex, cr)
 		reader, err := storage.Reader(p.uri)
 		checkError(err)
 		bytes, err := ioutil.ReadAll(reader)
