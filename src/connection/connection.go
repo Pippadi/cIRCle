@@ -10,9 +10,9 @@ import (
 
 type Connection struct {
 	UI       *UI
-	Nick     string
+	nick     string
 	client   *ircclient.IRCClient
-	Buffers  map[string](*buffer.Buffer)
+	buffers  map[string](*buffer.Buffer)
 	autojoin []string
 }
 
@@ -20,7 +20,8 @@ func New(w fyne.Window) *Connection {
 	c := Connection{}
 	c.UI = newUI(w)
 	c.UI.ConnectBtn.OnTapped = c.connect
-	c.Buffers = make(map[string](*buffer.Buffer))
+	c.buffers = make(map[string](*buffer.Buffer))
+	c.autojoin = make([]string, 0)
 	c.UI.SetConnectionState(false)
 	return &c
 }
@@ -32,9 +33,9 @@ func (conn *Connection) connect() {
 	}
 
 	addr := conn.UI.AddrEntry.Text + ":" + conn.UI.PortEntry.Text
-	conn.Nick = conn.UI.NickEntry.Text
+	conn.nick = conn.UI.NickEntry.Text
 
-	conn.client = ircclient.New(addr, conn.UI.PassEntry.Text, conn.Nick)
+	conn.client = ircclient.New(addr, conn.UI.PassEntry.Text, conn.nick)
 	conn.client.OnJoinable = conn.onJoinable
 	conn.client.OnMessage = conn.onIncomingMessage
 	conn.client.OnPersonJoined = conn.onPersonJoined
@@ -75,26 +76,26 @@ func (conn *Connection) openPM(who string) {
 }
 
 func (conn *Connection) addBufferIfNotExists(channel string) {
-	buf, exists := conn.Buffers[channel]
+	buf, exists := conn.buffers[channel]
 	if !exists {
-		buf = buffer.New(channel, conn.Nick)
-		conn.Buffers[channel] = buf
+		buf = buffer.New(channel, conn.nick)
+		conn.buffers[channel] = buf
 		conn.UI.AddBuffer(buf)
-		go conn.client.ListenAndWriteMessages(conn.Buffers[channel].Outgoing)
+		go conn.client.ListenAndWriteMessages(conn.buffers[channel].Outgoing)
 	}
 	conn.UI.tabStack.Select(buf.UI.TabItem())
 }
 
 func (conn *Connection) removeBuffer(channel string) {
-	conn.UI.RemoveBuffer(conn.Buffers[channel])
-	delete(conn.Buffers, channel)
+	conn.UI.RemoveBuffer(conn.buffers[channel])
+	delete(conn.buffers, channel)
 }
 
 func (conn *Connection) handleCommandFromBuffer(channel string) {
 	var cmd message.Command
 	shouldContinue := true
 	for shouldContinue {
-		cmd = <-conn.Buffers[channel].CommandOut
+		cmd = <-conn.buffers[channel].CommandOut
 		switch cmd.Action {
 		case "part":
 			if channel[0] == '#' {
