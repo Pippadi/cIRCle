@@ -1,8 +1,6 @@
 package connection
 
 import (
-	"errors"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
@@ -18,7 +16,7 @@ type UI struct {
 	tabStack    *container.AppTabs
 	AddrEntry   *widgets.HostEntry
 	PortEntry   *widgets.PortEntry
-	NickEntry   *widget.Entry
+	NickEntry   *widgets.NickEntry
 	PassEntry   *widget.Entry
 	ConnectBtn  *widget.Button
 	JoinEntry   *widgets.EnterCatchingEntry
@@ -30,12 +28,8 @@ func newUI(w fyne.Window) *UI {
 	ui := UI{}
 
 	ui.AddrEntry = widgets.NewHostEntry()
-
 	ui.PortEntry = widgets.NewPortEntry()
-
-	ui.NickEntry = widget.NewEntry()
-	ui.NickEntry.SetPlaceHolder("Nick")
-	ui.NickEntry.Validator = validNickString
+	ui.NickEntry = widgets.NewNickEntry()
 
 	ui.PassEntry = widget.NewEntry()
 	ui.PassEntry.SetPlaceHolder("Password (optional)")
@@ -101,13 +95,6 @@ func (ui *UI) ValidateConnParams() error {
 	}
 	if err := ui.PortEntry.Validate(); err != nil {
 		return err
-	}
-	return nil
-}
-
-func validNickString(nick string) error {
-	if nick == "" {
-		return errors.New("Nick cannot be empty")
 	}
 	return nil
 }
