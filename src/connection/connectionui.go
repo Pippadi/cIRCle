@@ -17,7 +17,7 @@ import (
 type UI struct {
 	inputFields *fyne.Container
 	tabStack    *container.AppTabs
-	AddrEntry   *widget.Entry
+	AddrEntry   *widgets.HostEntry
 	PortEntry   *widgets.NumericEntry
 	NickEntry   *widget.Entry
 	PassEntry   *widget.Entry
@@ -30,9 +30,7 @@ type UI struct {
 func newUI(w fyne.Window) *UI {
 	ui := UI{}
 
-	ui.AddrEntry = widget.NewEntry()
-	ui.AddrEntry.SetPlaceHolder("Address")
-	ui.AddrEntry.Validator = validAddrString
+	ui.AddrEntry = widgets.NewHostEntry()
 
 	ui.PortEntry = widgets.NewNumericEntry()
 	ui.PortEntry.SetPlaceHolder("Port")
@@ -117,13 +115,6 @@ func validPortString(p string) error {
 	}
 	if port > 65535 || port < 0 {
 		return errors.New("Port out of range")
-	}
-	return nil
-}
-
-func validAddrString(addr string) error {
-	if addr == "" {
-		return errors.New("Address cannot be empty")
 	}
 	return nil
 }
